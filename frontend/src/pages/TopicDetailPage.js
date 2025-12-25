@@ -541,12 +541,12 @@ const TopicDetailPage = () => {
             </div>
             <div className="space-y-2">
               <Label>Assign to (optional)</Label>
-              <Select value={taskForm.worker_id} onValueChange={(v) => setTaskForm({ ...taskForm, worker_id: v })}>
+              <Select value={taskForm.worker_id || "unassigned"} onValueChange={(v) => setTaskForm({ ...taskForm, worker_id: v === "unassigned" ? "" : v })}>
                 <SelectTrigger data-testid="task-worker-select">
                   <SelectValue placeholder="Select a member" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Unassigned</SelectItem>
+                  <SelectItem value="unassigned">Unassigned</SelectItem>
                   {topic?.members?.map((m) => (
                     <SelectItem key={m.user_id} value={m.user_id.toString()}>{m.user.name}</SelectItem>
                   ))}
