@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { topicsAPI, tasksAPI, usersAPI } from '../lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -13,7 +14,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
 } from '../components/ui/dialog';
 import {
@@ -51,6 +51,7 @@ const TopicDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, isSuperuser } = useAuth();
+  const { t } = useLanguage();
   const [topic, setTopic] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
@@ -86,7 +87,7 @@ const TopicDetailPage = () => {
       setAllUsers(usersRes.data);
       setEditForm({ name: topicRes.data.name, description: topicRes.data.description || '' });
     } catch (error) {
-      toast.error('Failed to load topic');
+      toast.error(t('common.error'));
       navigate('/topics');
     } finally {
       setLoading(false);
@@ -103,22 +104,22 @@ const TopicDetailPage = () => {
   const handleUpdateTopic = async () => {
     try {
       await topicsAPI.update(id, editForm);
-      toast.success('Topic updated');
+      toast.success(t('topicDetail.topicUpdated'));
       setShowEditTopic(false);
       fetchTopic();
     } catch (error) {
-      toast.error('Failed to update topic');
+      toast.error(t('common.error'));
     }
   };
 
   const handleDeleteTopic = async () => {
-    if (!confirm('Are you sure you want to delete this topic?')) return;
+    if (!confirm(t('topicDetail.confirmDelete'))) return;
     try {
       await topicsAPI.delete(id);
-      toast.success('Topic deleted');
+      toast.success(t('topicDetail.topicDeleted'));
       navigate('/topics');
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to delete topic');
+      toast.error(error.response?.data?.detail || t('common.error'));
     }
   };
 
@@ -128,23 +129,23 @@ const TopicDetailPage = () => {
         user_id: parseInt(memberForm.user_id),
         role: memberForm.role
       });
-      toast.success('Member added');
+      toast.success(t('topicDetail.memberAdded'));
       setShowAddMember(false);
       setMemberForm({ user_id: '', role: 'member' });
       fetchTopic();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to add member');
+      toast.error(error.response?.data?.detail || t('common.error'));
     }
   };
 
   const handleRemoveMember = async (userId) => {
-    if (!confirm('Remove this member?')) return;
+    if (!confirm(t('topicDetail.removeMember') + '?')) return;
     try {
       await topicsAPI.removeMember(id, userId);
-      toast.success('Member removed');
+      toast.success(t('topicDetail.memberRemoved'));
       fetchTopic();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to remove member');
+      toast.error(error.response?.data?.detail || t('common.error'));
     }
   };
 
@@ -154,38 +155,38 @@ const TopicDetailPage = () => {
         topic_id: parseInt(id),
         title: taskForm.title,
         description: taskForm.description || null,
-        worker_id: taskForm.worker_id ? parseInt(taskForm.worker_id) : null,
+        worker_id: taskForm.worker_id && taskForm.worker_id !== 'unassigned' ? parseInt(taskForm.worker_id) : null,
         start_time: taskForm.start_time?.toISOString() || null,
         end_time: taskForm.end_time?.toISOString() || null
       };
       await tasksAPI.create(taskData);
-      toast.success('Task created');
+      toast.success(t('taskForm.taskCreated'));
       setShowCreateTask(false);
       setTaskForm({ title: '', description: '', worker_id: '', start_time: null, end_time: null });
       fetchTopic();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to create task');
+      toast.error(error.response?.data?.detail || t('common.error'));
     }
   };
 
   const handleDeleteTask = async (taskId) => {
-    if (!confirm('Delete this task?')) return;
+    if (!confirm(t('taskForm.deleteTask') + '?')) return;
     try {
       await tasksAPI.delete(taskId);
-      toast.success('Task deleted');
+      toast.success(t('taskForm.taskDeleted'));
       fetchTopic();
     } catch (error) {
-      toast.error('Failed to delete task');
+      toast.error(t('common.error'));
     }
   };
 
   const handleUpdateTaskStatus = async (taskId, status) => {
     try {
       await tasksAPI.update(taskId, { status });
-      toast.success('Task updated');
+      toast.success(t('taskForm.taskUpdated'));
       fetchTopic();
     } catch (error) {
-      toast.error('Failed to update task');
+      toast.error(t('common.error'));
     }
   };
 
@@ -193,12 +194,12 @@ const TopicDetailPage = () => {
     if (!selectedTask) return;
     try {
       await tasksAPI.assignToUsers(selectedTask.id, workerIds);
-      toast.success('Task assigned to selected users');
+      toast.success(t('common.success'));
       setShowAssignTask(false);
       setSelectedTask(null);
       fetchTopic();
     } catch (error) {
-      toast.error('Failed to assign task');
+      toast.error(t('common.error'));
     }
   };
 
@@ -234,7 +235,7 @@ const TopicDetailPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
           <Link to="/topics" className="text-[#6c757d] hover:text-[#212529] flex items-center gap-1 mb-3 text-sm">
-            <ArrowLeft className="w-4 h-4" /> Back to Topics
+            <ArrowLeft className="w-4 h-4" /> {t('topicDetail.backToTopics')}
           </Link>
           <div className="flex items-center gap-3">
             <h1 className="text-3xl md:text-4xl font-bold font-['Manrope'] text-[#212529] tracking-tight">
@@ -246,7 +247,7 @@ const TopicDetailPage = () => {
               </Badge>
             )}
           </div>
-          <p className="mt-2 text-[#6c757d]">{topic?.description || 'No description'}</p>
+          <p className="mt-2 text-[#6c757d]">{topic?.description || t('topics.noDescription')}</p>
         </div>
         {isAdmin && (
           <div className="flex gap-2">
@@ -256,7 +257,7 @@ const TopicDetailPage = () => {
               onClick={() => setShowEditTopic(true)}
               data-testid="edit-topic-btn"
             >
-              <Edit className="w-4 h-4 mr-2" /> Edit
+              <Edit className="w-4 h-4 mr-2" /> {t('topicDetail.edit')}
             </Button>
             {isOwner && (
               <Button
@@ -265,7 +266,7 @@ const TopicDetailPage = () => {
                 onClick={handleDeleteTopic}
                 data-testid="delete-topic-btn"
               >
-                <Trash2 className="w-4 h-4 mr-2" /> Delete
+                <Trash2 className="w-4 h-4 mr-2" /> {t('topicDetail.delete')}
               </Button>
             )}
           </div>
@@ -278,7 +279,7 @@ const TopicDetailPage = () => {
           <CardHeader className="flex flex-row items-center justify-between pb-4">
             <CardTitle className="text-lg font-semibold font-['Manrope'] flex items-center gap-2">
               <Users className="w-5 h-5 text-[#0d6efd]" />
-              Members ({topic?.members?.length || 0})
+              {t('topicDetail.members')} ({topic?.members?.length || 0})
             </CardTitle>
             {isAdmin && (
               <Button
@@ -336,7 +337,7 @@ const TopicDetailPage = () => {
           <CardHeader className="flex flex-row items-center justify-between pb-4">
             <CardTitle className="text-lg font-semibold font-['Manrope'] flex items-center gap-2">
               <CheckSquare className="w-5 h-5 text-[#0d6efd]" />
-              Tasks ({tasks.length})
+              {t('topicDetail.tasks')} ({tasks.length})
             </CardTitle>
             {isAdmin && (
               <Button
@@ -344,7 +345,7 @@ const TopicDetailPage = () => {
                 className="bg-[#0d6efd] hover:bg-[#0b5ed7] text-white"
                 data-testid="create-task-btn"
               >
-                <Plus className="w-4 h-4 mr-2" /> Add Task
+                <Plus className="w-4 h-4 mr-2" /> {t('topicDetail.addTask')}
               </Button>
             )}
           </CardHeader>
@@ -352,14 +353,14 @@ const TopicDetailPage = () => {
             {tasks.length === 0 ? (
               <div className="text-center py-8 text-[#6c757d]">
                 <CheckSquare className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p>No tasks yet</p>
+                <p>{t('topicDetail.noTasksYet')}</p>
                 {isAdmin && (
                   <Button
                     variant="link"
                     className="text-[#0d6efd] mt-2"
                     onClick={() => setShowCreateTask(true)}
                   >
-                    Create the first task
+                    {t('topicDetail.createFirstTask')}
                   </Button>
                 )}
               </div>
@@ -387,12 +388,12 @@ const TopicDetailPage = () => {
                         )}
                         {task.start_time && (
                           <span className="flex items-center gap-1">
-                            <CalendarIcon className="w-3 h-3" /> Start: {format(new Date(task.start_time), 'MMM dd')}
+                            <CalendarIcon className="w-3 h-3" /> {t('tasks.startDate')}: {format(new Date(task.start_time), 'MMM dd')}
                           </span>
                         )}
                         {task.end_time && (
                           <span className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" /> Due: {format(new Date(task.end_time), 'MMM dd')}
+                            <Clock className="w-3 h-3" /> {t('tasks.due')}: {format(new Date(task.end_time), 'MMM dd')}
                           </span>
                         )}
                       </div>
@@ -406,24 +407,24 @@ const TopicDetailPage = () => {
                       <DropdownMenuContent align="end">
                         {task.worker_id === user?.id && task.status === 'pending' && (
                           <DropdownMenuItem onClick={() => handleUpdateTaskStatus(task.id, 'in_progress')}>
-                            Mark In Progress
+                            {t('taskForm.markInProgress')}
                           </DropdownMenuItem>
                         )}
                         {task.worker_id === user?.id && task.status !== 'completed' && (
                           <DropdownMenuItem onClick={() => handleUpdateTaskStatus(task.id, 'completed')}>
-                            Mark Complete
+                            {t('taskForm.markComplete')}
                           </DropdownMenuItem>
                         )}
                         {isAdmin && (
                           <>
                             <DropdownMenuItem onClick={() => { setSelectedTask(task); setShowAssignTask(true); }}>
-                              Assign to Users
+                              {t('taskForm.assignToUsers')}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="text-[#dc3545] focus:text-[#dc3545]"
                               onClick={() => handleDeleteTask(task.id)}
                             >
-                              Delete Task
+                              {t('taskForm.deleteTask')}
                             </DropdownMenuItem>
                           </>
                         )}
@@ -441,11 +442,11 @@ const TopicDetailPage = () => {
       <Dialog open={showEditTopic} onOpenChange={setShowEditTopic}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Topic</DialogTitle>
+            <DialogTitle>{t('topicDetail.editTopic')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Name</Label>
+              <Label>{t('topicDetail.topicName')}</Label>
               <Input
                 value={editForm.name}
                 onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
@@ -453,7 +454,7 @@ const TopicDetailPage = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label>Description</Label>
+              <Label>{t('topicDetail.description')}</Label>
               <Textarea
                 value={editForm.description}
                 onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
@@ -463,9 +464,9 @@ const TopicDetailPage = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowEditTopic(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setShowEditTopic(false)}>{t('topicDetail.cancel')}</Button>
             <Button onClick={handleUpdateTopic} className="bg-[#0d6efd] hover:bg-[#0b5ed7]" data-testid="save-topic-btn">
-              Save Changes
+              {t('topicDetail.saveChanges')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -475,14 +476,14 @@ const TopicDetailPage = () => {
       <Dialog open={showAddMember} onOpenChange={setShowAddMember}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Member</DialogTitle>
+            <DialogTitle>{t('topicDetail.addMember')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>User</Label>
+              <Label>{t('admin.user')}</Label>
               <Select value={memberForm.user_id} onValueChange={(v) => setMemberForm({ ...memberForm, user_id: v })}>
                 <SelectTrigger data-testid="select-user">
-                  <SelectValue placeholder="Select a user" />
+                  <SelectValue placeholder={t('topicDetail.selectUser')} />
                 </SelectTrigger>
                 <SelectContent>
                   {nonMembers.map((u) => (
@@ -492,22 +493,22 @@ const TopicDetailPage = () => {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Role</Label>
+              <Label>{t('topicDetail.role')}</Label>
               <Select value={memberForm.role} onValueChange={(v) => setMemberForm({ ...memberForm, role: v })}>
                 <SelectTrigger data-testid="select-role">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="member">Member</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="member">{t('topicDetail.member')}</SelectItem>
+                  <SelectItem value="admin">{t('common.admin')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddMember(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setShowAddMember(false)}>{t('common.cancel')}</Button>
             <Button onClick={handleAddMember} className="bg-[#0d6efd] hover:bg-[#0b5ed7]" data-testid="add-member-submit">
-              Add Member
+              {t('topicDetail.addMember')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -517,36 +518,36 @@ const TopicDetailPage = () => {
       <Dialog open={showCreateTask} onOpenChange={setShowCreateTask}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Create Task</DialogTitle>
+            <DialogTitle>{t('taskForm.createTask')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Title *</Label>
+              <Label>{t('taskForm.title')} *</Label>
               <Input
                 value={taskForm.title}
                 onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })}
-                placeholder="Task title"
+                placeholder={t('taskForm.titlePlaceholder')}
                 data-testid="task-title-input"
               />
             </div>
             <div className="space-y-2">
-              <Label>Description</Label>
+              <Label>{t('taskForm.description')}</Label>
               <Textarea
                 value={taskForm.description}
                 onChange={(e) => setTaskForm({ ...taskForm, description: e.target.value })}
                 rows={2}
-                placeholder="Optional description"
+                placeholder={t('taskForm.descriptionPlaceholder')}
                 data-testid="task-description-input"
               />
             </div>
             <div className="space-y-2">
-              <Label>Assign to (optional)</Label>
+              <Label>{t('taskForm.assignTo')}</Label>
               <Select value={taskForm.worker_id || "unassigned"} onValueChange={(v) => setTaskForm({ ...taskForm, worker_id: v === "unassigned" ? "" : v })}>
                 <SelectTrigger data-testid="task-worker-select">
-                  <SelectValue placeholder="Select a member" />
+                  <SelectValue placeholder={t('taskForm.selectMember')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="unassigned">Unassigned</SelectItem>
+                  <SelectItem value="unassigned">{t('taskForm.unassigned')}</SelectItem>
                   {topic?.members?.map((m) => (
                     <SelectItem key={m.user_id} value={m.user_id.toString()}>{m.user.name}</SelectItem>
                   ))}
@@ -555,12 +556,12 @@ const TopicDetailPage = () => {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Start Date</Label>
+                <Label>{t('taskForm.startDate')}</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="w-full justify-start text-left font-normal">
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {taskForm.start_time ? format(taskForm.start_time, 'PPP') : 'Pick date'}
+                      {taskForm.start_time ? format(taskForm.start_time, 'PPP') : t('taskForm.pickDate')}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
@@ -573,12 +574,12 @@ const TopicDetailPage = () => {
                 </Popover>
               </div>
               <div className="space-y-2">
-                <Label>End Date</Label>
+                <Label>{t('taskForm.endDate')}</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="w-full justify-start text-left font-normal">
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {taskForm.end_time ? format(taskForm.end_time, 'PPP') : 'Pick date'}
+                      {taskForm.end_time ? format(taskForm.end_time, 'PPP') : t('taskForm.pickDate')}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
@@ -593,14 +594,14 @@ const TopicDetailPage = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateTask(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setShowCreateTask(false)}>{t('taskForm.cancel')}</Button>
             <Button
               onClick={handleCreateTask}
               className="bg-[#0d6efd] hover:bg-[#0b5ed7]"
               disabled={!taskForm.title}
               data-testid="create-task-submit"
             >
-              Create Task
+              {t('taskForm.create')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -610,11 +611,11 @@ const TopicDetailPage = () => {
       <Dialog open={showAssignTask} onOpenChange={setShowAssignTask}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Assign Task to Multiple Users</DialogTitle>
+            <DialogTitle>{t('taskForm.assignTask')}</DialogTitle>
           </DialogHeader>
           <div className="py-4">
             <p className="text-sm text-[#6c757d] mb-4">
-              Select members to assign "{selectedTask?.title}" to. A copy of the task will be created for each selected member.
+              {t('taskForm.assignDescription')}
             </p>
             <div className="space-y-2 max-h-[300px] overflow-y-auto">
               {topic?.members?.map((member) => (
@@ -636,7 +637,7 @@ const TopicDetailPage = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAssignTask(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setShowAssignTask(false)}>{t('common.cancel')}</Button>
             <Button
               onClick={() => {
                 const checkboxes = document.querySelectorAll('[data-user-id]:checked');
@@ -646,7 +647,7 @@ const TopicDetailPage = () => {
               className="bg-[#0d6efd] hover:bg-[#0b5ed7]"
               data-testid="assign-task-submit"
             >
-              Assign Task
+              {t('taskForm.assign')}
             </Button>
           </DialogFooter>
         </DialogContent>
