@@ -193,6 +193,18 @@ def delete_user(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
+    # Delete user's topic memberships
+    db.query(TopicMember).filter(TopicMember.user_id == user_id).delete()
+    
+    # Unassign tasks from this user (set worker_id to NULL)
+    db.query(Task).filter(Task.worker_id == user_id).update({"worker_id": None})
+    
+    # Delete topics owned by this user (cascades to members and tasks)
+    owned_topics = db.query(Topic).filter(Topic.creator_id == user_id).all()
+    for topic in owned_topics:
+        db.delete(topic)
+    
+    # Delete the user
     db.delete(user)
     db.commit()
     return {"message": "User deleted successfully"}
