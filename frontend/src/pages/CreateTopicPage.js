@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
 import { topicsAPI } from '../lib/api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -11,6 +12,7 @@ import { ArrowLeft, MessageSquare } from 'lucide-react';
 
 const CreateTopicPage = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -23,10 +25,10 @@ const CreateTopicPage = () => {
 
     try {
       const response = await topicsAPI.create(formData);
-      toast.success('Topic created successfully!');
+      toast.success(t('common.success'));
       navigate(`/topics/${response.data.id}`);
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to create topic');
+      toast.error(error.response?.data?.detail || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -38,7 +40,7 @@ const CreateTopicPage = () => {
         onClick={() => navigate(-1)}
         className="text-[#6c757d] hover:text-[#212529] flex items-center gap-1 mb-6 text-sm"
       >
-        <ArrowLeft className="w-4 h-4" /> Back
+        <ArrowLeft className="w-4 h-4" /> {t('common.back')}
       </button>
 
       <Card className="border-[#dee2e6]">
@@ -49,10 +51,10 @@ const CreateTopicPage = () => {
             </div>
             <div>
               <CardTitle className="text-2xl font-semibold font-['Manrope'] text-[#212529]">
-                Create New Topic
+                {t('createTopic.title')}
               </CardTitle>
               <CardDescription className="text-[#6c757d]">
-                Start a new discussion topic
+                {t('createTopic.subtitle')}
               </CardDescription>
             </div>
           </div>
@@ -60,12 +62,12 @@ const CreateTopicPage = () => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-[#212529]">Topic Name *</Label>
+              <Label htmlFor="name" className="text-[#212529]">{t('createTopic.topicName')} *</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Enter topic name"
+                placeholder={t('createTopic.topicNamePlaceholder')}
                 required
                 className="border-[#dee2e6] bg-[#f8f9fa] focus:bg-white"
                 data-testid="topic-name-input"
@@ -73,12 +75,12 @@ const CreateTopicPage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description" className="text-[#212529]">Description</Label>
+              <Label htmlFor="description" className="text-[#212529]">{t('createTopic.description')}</Label>
               <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Describe what this topic is about..."
+                placeholder={t('createTopic.descriptionPlaceholder')}
                 rows={4}
                 className="border-[#dee2e6] bg-[#f8f9fa] focus:bg-white resize-none"
                 data-testid="topic-description-input"
@@ -92,7 +94,7 @@ const CreateTopicPage = () => {
                 onClick={() => navigate(-1)}
                 className="flex-1 border-[#dee2e6]"
               >
-                Cancel
+                {t('createTopic.cancel')}
               </Button>
               <Button
                 type="submit"
@@ -100,7 +102,7 @@ const CreateTopicPage = () => {
                 className="flex-1 bg-[#0d6efd] hover:bg-[#0b5ed7] text-white"
                 data-testid="submit-topic-btn"
               >
-                {loading ? 'Creating...' : 'Create Topic'}
+                {loading ? t('createTopic.creating') : t('createTopic.create')}
               </Button>
             </div>
           </form>

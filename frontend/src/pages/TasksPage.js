@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 import { tasksAPI } from '../lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
@@ -15,6 +16,7 @@ import { format } from 'date-fns';
 import { CheckSquare, Calendar, Clock, Filter } from 'lucide-react';
 
 const TasksPage = () => {
+  const { t } = useLanguage();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -24,7 +26,7 @@ const TasksPage = () => {
       const response = await tasksAPI.getMyTasks();
       setTasks(response.data);
     } catch (error) {
-      toast.error('Failed to fetch tasks');
+      toast.error(t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -37,10 +39,10 @@ const TasksPage = () => {
   const handleUpdateStatus = async (taskId, status) => {
     try {
       await tasksAPI.update(taskId, { status });
-      toast.success('Task updated');
+      toast.success(t('taskForm.taskUpdated'));
       fetchTasks();
     } catch (error) {
-      toast.error('Failed to update task');
+      toast.error(t('common.error'));
     }
   };
 
@@ -54,6 +56,14 @@ const TasksPage = () => {
       case 'completed': return 'bg-[#198754] text-white';
       case 'in_progress': return 'bg-[#ffc107] text-[#212529]';
       default: return 'bg-[#6c757d] text-white';
+    }
+  };
+
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case 'completed': return t('tasks.completed');
+      case 'in_progress': return t('tasks.inProgress');
+      default: return t('tasks.pending');
     }
   };
 
@@ -71,21 +81,21 @@ const TasksPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl md:text-4xl font-bold font-['Manrope'] text-[#212529] tracking-tight">
-            My Tasks
+            {t('tasks.title')}
           </h1>
-          <p className="mt-1 text-[#6c757d]">Tasks assigned to you across all topics</p>
+          <p className="mt-1 text-[#6c757d]">{t('tasks.subtitle')}</p>
         </div>
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-[#6c757d]" />
           <Select value={filter} onValueChange={setFilter}>
             <SelectTrigger className="w-[180px] border-[#dee2e6]" data-testid="status-filter">
-              <SelectValue placeholder="Filter by status" />
+              <SelectValue placeholder={t('tasks.filterByStatus')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Tasks</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="in_progress">In Progress</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="all">{t('tasks.allTasks')}</SelectItem>
+              <SelectItem value="pending">{t('tasks.pending')}</SelectItem>
+              <SelectItem value="in_progress">{t('tasks.inProgress')}</SelectItem>
+              <SelectItem value="completed">{t('tasks.completed')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -96,19 +106,19 @@ const TasksPage = () => {
         <Card className="border-[#dee2e6]">
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-bold text-[#212529]">{tasks.filter(t => t.status === 'pending').length}</p>
-            <p className="text-sm text-[#6c757d]">Pending</p>
+            <p className="text-sm text-[#6c757d]">{t('tasks.pending')}</p>
           </CardContent>
         </Card>
         <Card className="border-[#dee2e6]">
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-bold text-[#ffc107]">{tasks.filter(t => t.status === 'in_progress').length}</p>
-            <p className="text-sm text-[#6c757d]">In Progress</p>
+            <p className="text-sm text-[#6c757d]">{t('tasks.inProgress')}</p>
           </CardContent>
         </Card>
         <Card className="border-[#dee2e6]">
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-bold text-[#198754]">{tasks.filter(t => t.status === 'completed').length}</p>
-            <p className="text-sm text-[#6c757d]">Completed</p>
+            <p className="text-sm text-[#6c757d]">{t('tasks.completed')}</p>
           </CardContent>
         </Card>
       </div>
@@ -119,10 +129,10 @@ const TasksPage = () => {
           <CardContent className="py-16 text-center">
             <CheckSquare className="w-16 h-16 mx-auto mb-4 text-[#6c757d] opacity-50" />
             <h3 className="text-lg font-medium text-[#212529] mb-2">
-              {filter === 'all' ? 'No tasks assigned' : `No ${filter.replace('_', ' ')} tasks`}
+              {filter === 'all' ? t('tasks.noTasksAssigned') : t('tasks.noTasksAssigned')}
             </h3>
             <p className="text-[#6c757d]">
-              {filter === 'all' ? 'Tasks assigned to you will appear here' : 'Try a different filter'}
+              {filter === 'all' ? t('tasks.tasksWillAppear') : t('tasks.tryDifferentFilter')}
             </p>
           </CardContent>
         </Card>
@@ -135,7 +145,7 @@ const TasksPage = () => {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="text-lg font-semibold text-[#212529]">{task.title}</h3>
-                      <Badge className={getStatusColor(task.status)}>{task.status.replace('_', ' ')}</Badge>
+                      <Badge className={getStatusColor(task.status)}>{getStatusLabel(task.status)}</Badge>
                     </div>
                     {task.description && (
                       <p className="text-[#6c757d] mb-3">{task.description}</p>
@@ -145,13 +155,13 @@ const TasksPage = () => {
                       {task.start_time && (
                         <span className="flex items-center gap-1">
                           <Calendar className="w-4 h-4" />
-                          Start: {format(new Date(task.start_time), 'MMM dd, yyyy')}
+                          {t('tasks.startDate')}: {format(new Date(task.start_time), 'MMM dd, yyyy')}
                         </span>
                       )}
                       {task.end_time && (
                         <span className="flex items-center gap-1">
                           <Clock className="w-4 h-4" />
-                          Due: {format(new Date(task.end_time), 'MMM dd, yyyy')}
+                          {t('tasks.due')}: {format(new Date(task.end_time), 'MMM dd, yyyy')}
                         </span>
                       )}
                     </div>
@@ -165,7 +175,7 @@ const TasksPage = () => {
                         className="border-[#ffc107] text-[#ffc107] hover:bg-[#ffc107] hover:text-[#212529]"
                         data-testid={`start-task-${task.id}`}
                       >
-                        Start
+                        {t('tasks.start')}
                       </Button>
                     )}
                     {task.status !== 'completed' && (
@@ -176,7 +186,7 @@ const TasksPage = () => {
                         className="border-[#198754] text-[#198754] hover:bg-[#198754] hover:text-white"
                         data-testid={`complete-task-${task.id}`}
                       >
-                        Complete
+                        {t('tasks.complete')}
                       </Button>
                     )}
                   </div>

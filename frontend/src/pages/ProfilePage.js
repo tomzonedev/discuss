@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { usersAPI } from '../lib/api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -11,6 +12,7 @@ import { User, Mail, Phone, Shield, Save } from 'lucide-react';
 
 const ProfilePage = () => {
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: user?.name || '',
@@ -23,13 +25,13 @@ const ProfilePage = () => {
 
     try {
       await usersAPI.update(user.id, formData);
-      toast.success('Profile updated successfully');
+      toast.success(t('profile.profileUpdated'));
       // Update local storage
       const updatedUser = { ...user, ...formData };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       window.location.reload();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to update profile');
+      toast.error(error.response?.data?.detail || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -39,9 +41,9 @@ const ProfilePage = () => {
     <div className="max-w-2xl mx-auto space-y-8" data-testid="profile-page">
       <div>
         <h1 className="text-3xl md:text-4xl font-bold font-['Manrope'] text-[#212529] tracking-tight">
-          Profile
+          {t('profile.title')}
         </h1>
-        <p className="mt-1 text-[#6c757d]">Manage your account settings</p>
+        <p className="mt-1 text-[#6c757d]">{t('profile.subtitle')}</p>
       </div>
 
       {/* Profile Card */}
@@ -70,7 +72,7 @@ const ProfilePage = () => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-[#212529]">Name</Label>
+              <Label htmlFor="name" className="text-[#212529]">{t('profile.name')}</Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6c757d]" />
                 <Input
@@ -84,7 +86,7 @@ const ProfilePage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-[#212529]">Email</Label>
+              <Label htmlFor="email" className="text-[#212529]">{t('profile.email')}</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6c757d]" />
                 <Input
@@ -94,18 +96,18 @@ const ProfilePage = () => {
                   className="pl-10 border-[#dee2e6] bg-[#e9ecef] cursor-not-allowed"
                 />
               </div>
-              <p className="text-xs text-[#6c757d]">Email cannot be changed</p>
+              <p className="text-xs text-[#6c757d]">{t('profile.emailCannotChange')}</p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone" className="text-[#212529]">Phone</Label>
+              <Label htmlFor="phone" className="text-[#212529]">{t('profile.phone')}</Label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6c757d]" />
                 <Input
                   id="phone"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  placeholder="+1 234 567 890"
+                  placeholder={t('profile.phonePlaceholder')}
                   className="pl-10 border-[#dee2e6] bg-[#f8f9fa] focus:bg-white"
                   data-testid="profile-phone"
                 />
@@ -119,7 +121,7 @@ const ProfilePage = () => {
               data-testid="save-profile-btn"
             >
               <Save className="w-4 h-4 mr-2" />
-              {loading ? 'Saving...' : 'Save Changes'}
+              {loading ? t('profile.saving') : t('profile.saveChanges')}
             </Button>
           </form>
         </CardContent>
@@ -128,8 +130,8 @@ const ProfilePage = () => {
       {/* Danger Zone */}
       <Card className="border-[#dc3545]/30">
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg font-semibold text-[#dc3545]">Danger Zone</CardTitle>
-          <CardDescription>Irreversible actions</CardDescription>
+          <CardTitle className="text-lg font-semibold text-[#dc3545]">{t('profile.dangerZone')}</CardTitle>
+          <CardDescription>{t('profile.irreversibleActions')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Button
@@ -138,7 +140,7 @@ const ProfilePage = () => {
             onClick={logout}
             data-testid="logout-profile-btn"
           >
-            Sign Out
+            {t('profile.signOut')}
           </Button>
         </CardContent>
       </Card>
