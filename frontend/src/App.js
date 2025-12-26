@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { LanguageProvider } from './context/LanguageContext';
 import { Toaster } from './components/ui/sonner';
 import Layout from './components/Layout';
 import LoginPage from './pages/LoginPage';
@@ -74,10 +75,12 @@ function AppRoutes() {
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <AppRoutes />
-        <Toaster position="top-right" richColors />
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <AppRoutes />
+          <Toaster position="top-right" richColors />
+        </AuthProvider>
+      </LanguageProvider>
     </BrowserRouter>
   );
 }
