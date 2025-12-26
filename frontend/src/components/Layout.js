@@ -1,4 +1,5 @@
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import {
@@ -19,9 +20,11 @@ import {
   X
 } from 'lucide-react';
 import { useState } from 'react';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const Layout = ({ children }) => {
   const { user, logout, isSuperuser } = useAuth();
+  const { t } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -32,13 +35,13 @@ const Layout = ({ children }) => {
   };
 
   const navItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/topics', label: 'Topics', icon: MessageSquare },
-    { path: '/tasks', label: 'My Tasks', icon: CheckSquare },
+    { path: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
+    { path: '/topics', label: t('nav.topics'), icon: MessageSquare },
+    { path: '/tasks', label: t('nav.myTasks'), icon: CheckSquare },
   ];
 
   if (isSuperuser()) {
-    navItems.push({ path: '/admin', label: 'Admin', icon: Users });
+    navItems.push({ path: '/admin', label: t('nav.admin'), icon: Users });
   }
 
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
@@ -55,7 +58,7 @@ const Layout = ({ children }) => {
                 <MessageSquare className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-semibold text-[#212529] tracking-tight font-['Manrope']">
-                DiscussHub
+                {t('app.name')}
               </span>
             </Link>
 
@@ -65,7 +68,7 @@ const Layout = ({ children }) => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
+                  data-testid={`nav-${item.path.replace('/', '')}`}
                   className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                     isActive(item.path)
                       ? 'bg-[#0d6efd] text-white'
@@ -78,8 +81,10 @@ const Layout = ({ children }) => {
               ))}
             </div>
 
-            {/* User Menu */}
-            <div className="flex items-center gap-4">
+            {/* Right Side - Language & User Menu */}
+            <div className="flex items-center gap-2">
+              <LanguageSwitcher />
+              
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -101,7 +106,7 @@ const Layout = ({ children }) => {
                     <p className="text-xs text-[#6c757d]">{user?.email}</p>
                     {isSuperuser() && (
                       <span className="inline-block mt-1 px-2 py-0.5 bg-[#0d6efd] text-white text-xs rounded-full">
-                        Superuser
+                        {t('common.superuser')}
                       </span>
                     )}
                   </div>
@@ -109,7 +114,7 @@ const Layout = ({ children }) => {
                   <DropdownMenuItem asChild>
                     <Link to="/profile" className="flex items-center gap-2" data-testid="profile-link">
                       <User className="w-4 h-4" />
-                      Profile
+                      {t('nav.profile')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
@@ -119,7 +124,7 @@ const Layout = ({ children }) => {
                     data-testid="logout-btn"
                   >
                     <LogOut className="w-4 h-4 mr-2" />
-                    Logout
+                    {t('nav.logout')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
