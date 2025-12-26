@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { topicsAPI, tasksAPI } from '../lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -18,6 +19,7 @@ import { format } from 'date-fns';
 
 const DashboardPage = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [topics, setTopics] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -65,14 +67,14 @@ const DashboardPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl md:text-4xl font-bold font-['Manrope'] text-[#212529] tracking-tight">
-            Welcome, {user?.name?.split(' ')[0]}
+            {t('dashboard.welcome')}, {user?.name?.split(' ')[0]}
           </h1>
-          <p className="mt-1 text-[#6c757d]">Here's what's happening with your topics and tasks</p>
+          <p className="mt-1 text-[#6c757d]">{t('dashboard.subtitle')}</p>
         </div>
         <Link to="/topics/new">
           <Button className="bg-[#0d6efd] hover:bg-[#0b5ed7] text-white" data-testid="create-topic-btn">
             <Plus className="w-4 h-4 mr-2" />
-            New Topic
+            {t('dashboard.newTopic')}
           </Button>
         </Link>
       </div>
@@ -83,7 +85,7 @@ const DashboardPage = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-[#6c757d] uppercase tracking-wide">My Topics</p>
+                <p className="text-sm font-medium text-[#6c757d] uppercase tracking-wide">{t('dashboard.myTopics')}</p>
                 <p className="text-3xl font-bold text-[#212529] mt-1">{topics.length}</p>
               </div>
               <div className="w-12 h-12 bg-[#0d6efd]/10 rounded-lg flex items-center justify-center">
@@ -97,7 +99,7 @@ const DashboardPage = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-[#6c757d] uppercase tracking-wide">Pending Tasks</p>
+                <p className="text-sm font-medium text-[#6c757d] uppercase tracking-wide">{t('dashboard.pendingTasks')}</p>
                 <p className="text-3xl font-bold text-[#212529] mt-1">{pendingTasks.length}</p>
               </div>
               <div className="w-12 h-12 bg-[#ffc107]/10 rounded-lg flex items-center justify-center">
@@ -111,7 +113,7 @@ const DashboardPage = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-[#6c757d] uppercase tracking-wide">Completed</p>
+                <p className="text-sm font-medium text-[#6c757d] uppercase tracking-wide">{t('dashboard.completed')}</p>
                 <p className="text-3xl font-bold text-[#212529] mt-1">{completedTasks.length}</p>
               </div>
               <div className="w-12 h-12 bg-[#198754]/10 rounded-lg flex items-center justify-center">
@@ -125,7 +127,7 @@ const DashboardPage = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-[#6c757d] uppercase tracking-wide">Total Tasks</p>
+                <p className="text-sm font-medium text-[#6c757d] uppercase tracking-wide">{t('dashboard.totalTasks')}</p>
                 <p className="text-3xl font-bold text-[#212529] mt-1">{tasks.length}</p>
               </div>
               <div className="w-12 h-12 bg-[#6c757d]/10 rounded-lg flex items-center justify-center">
@@ -142,19 +144,19 @@ const DashboardPage = () => {
         <Card className="border-[#dee2e6]" data-testid="recent-topics-card">
           <CardHeader className="flex flex-row items-center justify-between pb-4">
             <CardTitle className="text-xl font-semibold font-['Manrope'] text-[#212529]">
-              My Topics
+              {t('dashboard.myTopics')}
             </CardTitle>
             <Link to="/topics" className="text-sm text-[#0d6efd] hover:underline flex items-center gap-1">
-              View all <ArrowRight className="w-4 h-4" />
+              {t('dashboard.viewAll')} <ArrowRight className="w-4 h-4" />
             </Link>
           </CardHeader>
           <CardContent className="space-y-3">
             {topics.length === 0 ? (
               <div className="text-center py-8 text-[#6c757d]">
                 <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p>No topics yet</p>
+                <p>{t('dashboard.noTopicsYet')}</p>
                 <Link to="/topics/new">
-                  <Button variant="link" className="text-[#0d6efd] mt-2">Create your first topic</Button>
+                  <Button variant="link" className="text-[#0d6efd] mt-2">{t('dashboard.createFirstTopic')}</Button>
                 </Link>
               </div>
             ) : (
@@ -169,7 +171,7 @@ const DashboardPage = () => {
                     <div>
                       <h3 className="font-medium text-[#212529]">{topic.name}</h3>
                       <p className="text-sm text-[#6c757d] mt-1 line-clamp-1">
-                        {topic.description || 'No description'}
+                        {topic.description || t('topics.noDescription')}
                       </p>
                     </div>
                     <Badge variant="outline" className="border-[#dee2e6] text-[#6c757d]">
@@ -178,10 +180,10 @@ const DashboardPage = () => {
                   </div>
                   <div className="flex items-center gap-4 mt-3 text-xs text-[#6c757d]">
                     <span className="flex items-center gap-1">
-                      <Users className="w-3 h-3" /> {topic.member_count} members
+                      <Users className="w-3 h-3" /> {topic.member_count} {t('topics.members')}
                     </span>
                     <span className="flex items-center gap-1">
-                      <CheckSquare className="w-3 h-3" /> {topic.task_count} tasks
+                      <CheckSquare className="w-3 h-3" /> {topic.task_count} {t('topics.tasks')}
                     </span>
                   </div>
                 </Link>
@@ -194,18 +196,18 @@ const DashboardPage = () => {
         <Card className="border-[#dee2e6]" data-testid="pending-tasks-card">
           <CardHeader className="flex flex-row items-center justify-between pb-4">
             <CardTitle className="text-xl font-semibold font-['Manrope'] text-[#212529]">
-              Pending Tasks
+              {t('dashboard.pendingTasks')}
             </CardTitle>
             <Link to="/tasks" className="text-sm text-[#0d6efd] hover:underline flex items-center gap-1">
-              View all <ArrowRight className="w-4 h-4" />
+              {t('dashboard.viewAll')} <ArrowRight className="w-4 h-4" />
             </Link>
           </CardHeader>
           <CardContent className="space-y-3">
             {pendingTasks.length === 0 ? (
               <div className="text-center py-8 text-[#6c757d]">
                 <CheckSquare className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p>No pending tasks</p>
-                <p className="text-sm mt-1">All caught up!</p>
+                <p>{t('dashboard.noPendingTasks')}</p>
+                <p className="text-sm mt-1">{t('dashboard.allCaughtUp')}</p>
               </div>
             ) : (
               pendingTasks.slice(0, 5).map((task) => (
@@ -226,7 +228,7 @@ const DashboardPage = () => {
                   {task.end_time && (
                     <div className="flex items-center gap-1 mt-3 text-xs text-[#6c757d]">
                       <Calendar className="w-3 h-3" />
-                      Due: {format(new Date(task.end_time), 'MMM dd, yyyy')}
+                      {t('tasks.due')}: {format(new Date(task.end_time), 'MMM dd, yyyy')}
                     </div>
                   )}
                 </div>

@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { toast } from 'sonner';
 import { MessageSquare, Mail, Lock, User, Phone } from 'lucide-react';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -18,6 +20,7 @@ const LoginPage = () => {
     phone: '',
   });
   const { login, register } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -27,14 +30,14 @@ const LoginPage = () => {
     try {
       if (isLogin) {
         await login(formData.email, formData.password);
-        toast.success('Welcome back!');
+        toast.success(t('auth.welcomeBack') + '!');
       } else {
         await register(formData.name, formData.email, formData.password, formData.phone || null);
-        toast.success('Account created successfully!');
+        toast.success(t('common.success') + '!');
       }
       navigate('/dashboard');
     } catch (error) {
-      const message = error.response?.data?.detail || 'An error occurred';
+      const message = error.response?.data?.detail || t('common.error');
       toast.error(message);
     } finally {
       setLoading(false);
@@ -51,29 +54,29 @@ const LoginPage = () => {
             <MessageSquare className="w-8 h-8" />
           </div>
           <h1 className="text-5xl font-bold font-['Manrope'] tracking-tight mb-4">
-            DiscussHub
+            {t('app.name')}
           </h1>
           <p className="text-xl text-white/90 leading-relaxed max-w-md">
-            A minimal discussion board for teams. Create topics, assign tasks, and collaborate efficiently.
+            {t('app.tagline')}
           </p>
           <div className="mt-12 space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
                 <MessageSquare className="w-5 h-5" />
               </div>
-              <span className="text-white/90">Create and manage discussion topics</span>
+              <span className="text-white/90">{t('app.feature1')}</span>
             </div>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
                 <User className="w-5 h-5" />
               </div>
-              <span className="text-white/90">Role-based access control</span>
+              <span className="text-white/90">{t('app.feature2')}</span>
             </div>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
                 <Lock className="w-5 h-5" />
               </div>
-              <span className="text-white/90">Secure JWT authentication</span>
+              <span className="text-white/90">{t('app.feature3')}</span>
             </div>
           </div>
         </div>
@@ -83,29 +86,32 @@ const LoginPage = () => {
       </div>
 
       {/* Right Panel - Form */}
-      <div className="flex-1 flex items-center justify-center p-8">
+      <div className="flex-1 flex items-center justify-center p-8 relative">
+        {/* Language Switcher - Top Right */}
+        <div className="absolute top-4 right-4">
+          <LanguageSwitcher />
+        </div>
+        
         <Card className="w-full max-w-md border-[#dee2e6] shadow-lg" data-testid="auth-card">
           <CardHeader className="space-y-1 pb-6">
             <div className="lg:hidden flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-[#0d6efd] rounded-lg flex items-center justify-center">
                 <MessageSquare className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-semibold font-['Manrope']">DiscussHub</span>
+              <span className="text-xl font-semibold font-['Manrope']">{t('app.name')}</span>
             </div>
             <CardTitle className="text-2xl font-semibold font-['Manrope'] text-[#212529]">
-              {isLogin ? 'Welcome back' : 'Create account'}
+              {isLogin ? t('auth.welcomeBack') : t('auth.createAccount')}
             </CardTitle>
             <CardDescription className="text-[#6c757d]">
-              {isLogin
-                ? 'Enter your credentials to access your account'
-                : 'Fill in the details to create your account'}
+              {isLogin ? t('auth.enterCredentials') : t('auth.fillDetails')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-[#212529]">Name</Label>
+                  <Label htmlFor="name" className="text-[#212529]">{t('auth.name')}</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6c757d]" />
                     <Input
@@ -123,7 +129,7 @@ const LoginPage = () => {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-[#212529]">Email</Label>
+                <Label htmlFor="email" className="text-[#212529]">{t('auth.email')}</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6c757d]" />
                   <Input
@@ -140,7 +146,7 @@ const LoginPage = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-[#212529]">Password</Label>
+                <Label htmlFor="password" className="text-[#212529]">{t('auth.password')}</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6c757d]" />
                   <Input
@@ -159,7 +165,7 @@ const LoginPage = () => {
 
               {!isLogin && (
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-[#212529]">Phone (optional)</Label>
+                  <Label htmlFor="phone" className="text-[#212529]">{t('auth.phoneOptional')}</Label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6c757d]" />
                     <Input
@@ -181,20 +187,20 @@ const LoginPage = () => {
                 disabled={loading}
                 data-testid="submit-btn"
               >
-                {loading ? 'Please wait...' : isLogin ? 'Sign In' : 'Create Account'}
+                {loading ? t('auth.pleaseWait') : isLogin ? t('auth.signIn') : t('auth.createAccount')}
               </Button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-sm text-[#6c757d]">
-                {isLogin ? "Don't have an account?" : 'Already have an account?'}
+                {isLogin ? t('auth.noAccount') : t('auth.hasAccount')}
                 <button
                   type="button"
                   onClick={() => setIsLogin(!isLogin)}
                   className="ml-1 text-[#0d6efd] hover:underline font-medium"
                   data-testid="toggle-auth-mode"
                 >
-                  {isLogin ? 'Sign Up' : 'Sign In'}
+                  {isLogin ? t('auth.signUp') : t('auth.signIn')}
                 </button>
               </p>
             </div>
@@ -202,7 +208,7 @@ const LoginPage = () => {
             {isLogin && (
               <div className="mt-4 p-3 bg-[#f8f9fa] rounded-md border border-[#dee2e6]">
                 <p className="text-xs text-[#6c757d] text-center">
-                  <strong>Demo Admin:</strong> admin@example.com / admin123
+                  <strong>{t('auth.demoAdmin')}:</strong> admin@example.com / admin123
                 </p>
               </div>
             )}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
 import { topicsAPI } from '../lib/api';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -16,6 +17,7 @@ import {
 } from 'lucide-react';
 
 const TopicsPage = () => {
+  const { t } = useLanguage();
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -32,7 +34,7 @@ const TopicsPage = () => {
       const response = await topicsAPI.getAll(params);
       setTopics(response.data);
     } catch (error) {
-      toast.error('Failed to fetch topics');
+      toast.error(t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -48,10 +50,10 @@ const TopicsPage = () => {
     e.stopPropagation();
     try {
       await topicsAPI.subscribe(topicId);
-      toast.success('Subscribed to topic');
+      toast.success(t('common.success'));
       fetchTopics();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to subscribe');
+      toast.error(error.response?.data?.detail || t('common.error'));
     }
   };
 
@@ -60,10 +62,10 @@ const TopicsPage = () => {
     e.stopPropagation();
     try {
       await topicsAPI.unsubscribe(topicId);
-      toast.success('Unsubscribed from topic');
+      toast.success(t('common.success'));
       fetchTopics();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to unsubscribe');
+      toast.error(error.response?.data?.detail || t('common.error'));
     }
   };
 
@@ -82,14 +84,14 @@ const TopicsPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl md:text-4xl font-bold font-['Manrope'] text-[#212529] tracking-tight">
-            Topics
+            {t('topics.title')}
           </h1>
-          <p className="mt-1 text-[#6c757d]">Browse and manage discussion topics</p>
+          <p className="mt-1 text-[#6c757d]">{t('topics.subtitle')}</p>
         </div>
         <Link to="/topics/new">
           <Button className="bg-[#0d6efd] hover:bg-[#0b5ed7] text-white" data-testid="create-topic-btn">
             <Plus className="w-4 h-4 mr-2" />
-            New Topic
+            {t('topics.newTopic')}
           </Button>
         </Link>
       </div>
@@ -99,7 +101,7 @@ const TopicsPage = () => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6c757d]" />
           <Input
-            placeholder="Search topics..."
+            placeholder={t('topics.searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10 border-[#dee2e6] bg-white"
@@ -113,7 +115,7 @@ const TopicsPage = () => {
             className={filter === 'all' ? 'bg-[#0d6efd] text-white' : 'border-[#dee2e6]'}
             data-testid="filter-all"
           >
-            All Topics
+            {t('topics.allTopics')}
           </Button>
           <Button
             variant={filter === 'subscribed' ? 'default' : 'outline'}
@@ -122,7 +124,7 @@ const TopicsPage = () => {
             data-testid="filter-subscribed"
           >
             <Filter className="w-4 h-4 mr-2" />
-            My Topics
+            {t('topics.myTopics')}
           </Button>
         </div>
       </div>
@@ -136,14 +138,14 @@ const TopicsPage = () => {
         <Card className="border-[#dee2e6]">
           <CardContent className="py-16 text-center">
             <MessageSquare className="w-16 h-16 mx-auto mb-4 text-[#6c757d] opacity-50" />
-            <h3 className="text-lg font-medium text-[#212529] mb-2">No topics found</h3>
+            <h3 className="text-lg font-medium text-[#212529] mb-2">{t('topics.noTopicsFound')}</h3>
             <p className="text-[#6c757d] mb-4">
-              {search ? 'Try a different search term' : 'Create your first topic to get started'}
+              {search ? t('topics.tryDifferentSearch') : t('topics.createToGetStarted')}
             </p>
             <Link to="/topics/new">
               <Button className="bg-[#0d6efd] hover:bg-[#0b5ed7] text-white">
                 <Plus className="w-4 h-4 mr-2" />
-                Create Topic
+                {t('topics.createTopic')}
               </Button>
             </Link>
           </CardContent>
@@ -170,7 +172,7 @@ const TopicsPage = () => {
                     )}
                   </div>
                   <p className="text-[#6c757d] text-sm line-clamp-2 mb-4 min-h-[40px]">
-                    {topic.description || 'No description provided'}
+                    {topic.description || t('topics.noDescription')}
                   </p>
                   <div className="flex items-center justify-between pt-4 border-t border-[#dee2e6]">
                     <div className="flex items-center gap-4 text-sm text-[#6c757d]">
@@ -190,7 +192,7 @@ const TopicsPage = () => {
                           onClick={(e) => handleUnsubscribe(topic.id, e)}
                           data-testid={`unsubscribe-${topic.id}`}
                         >
-                          Leave
+                          {t('topics.leave')}
                         </Button>
                       )
                     ) : (
@@ -201,7 +203,7 @@ const TopicsPage = () => {
                         onClick={(e) => handleSubscribe(topic.id, e)}
                         data-testid={`subscribe-${topic.id}`}
                       >
-                        Join
+                        {t('topics.join')}
                       </Button>
                     )}
                   </div>
